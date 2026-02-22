@@ -11,6 +11,7 @@ dependencies {
     // Resource Server — check JWT token
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     // JPA + Hibernate — for DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     // PostgreSQL

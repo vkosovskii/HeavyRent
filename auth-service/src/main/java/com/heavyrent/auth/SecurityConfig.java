@@ -50,7 +50,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authorizationServerFilterChain(HttpSecurity http) {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 new OAuth2AuthorizationServerConfigurer();
 
@@ -90,7 +90,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     // безопасность приложения (форм-логин)
-    public SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain defaultFilterChain(HttpSecurity http) {
         http
                 // Любой запрос требует логин.
                 .authorizeHttpRequests(auth -> auth
