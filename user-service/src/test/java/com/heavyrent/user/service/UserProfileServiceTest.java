@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,6 +29,7 @@ class UserProfileServiceTest {
     void findOrCreate_whenUserExists_shouldReturnExistingUser() {
         // ARRANGE
         UserProfile existingUser = new UserProfile();
+        existingUser.setId(1L);
         existingUser.setEmail("test@heavyrent.com");
         existingUser.setStatus(UserProfile.Status.ACTIVE);
 
@@ -49,6 +49,7 @@ class UserProfileServiceTest {
     void findOrCreate_whenNotUserExists_shouldReturnNewUser() {
         // ARRANGE
         UserProfile userProfile = new UserProfile();
+        userProfile.setId(1L);
         userProfile.setEmail("test@heavyrent.com");
         userProfile.setStatus(UserProfile.Status.UNVERIFIED);
 
@@ -74,6 +75,7 @@ class UserProfileServiceTest {
     void findOrCreate_shouldHandleRaceCondition() {
         // ARRANGE
         UserProfile userProfile = new UserProfile();
+        userProfile.setId(1L);
         userProfile.setEmail("test@heavyrent.com");
         userProfile.setStatus(UserProfile.Status.UNVERIFIED);
 

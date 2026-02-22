@@ -1,6 +1,12 @@
 server:
   port: 8081
 
+grpc:
+  server:
+    port: 9091
+    reflection:
+      enabled: true
+
 spring:
   application:
     name: user-service

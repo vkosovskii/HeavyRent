@@ -40,6 +40,7 @@ public class UserProfile {
     @PrePersist
     protected void onCreate() {
         status = Status.UNVERIFIED;
+        role = Role.UNKNOWN;
         isVerified = false;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
@@ -51,10 +52,10 @@ public class UserProfile {
     }
 
     public enum Status {
-        ACTIVE, INACTIVE, BANNED, UNVERIFIED
+        ACTIVE, INACTIVE, BANNED, UNVERIFIED, UNKNOWN
     }
 
     public enum Role {
-        RENTER, OWNER, ADMIN
+        RENTER, OWNER, ADMIN, UNKNOWN
     }
 }

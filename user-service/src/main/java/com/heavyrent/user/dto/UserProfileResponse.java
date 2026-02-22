@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record UserProfileResponse(
+        long id,
         String email,
         String firstName,
         String lastName,

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package user;
+
+option java_package = "com.heavyrent.grpc.user";
+option java_multiple_files = true;
+
+enum UserStatus {
+  UNVERIFIED = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+  BANNED = 3;
+}
+
+enum UserRole {
+  UNKNOWN = 0;
+  RENTER = 1;
+  OWNER = 2;
+  ADMIN = 3;
+}
+
+service UserGrpcService {
+  rpc GetUserById (GetUserByIdRequest) returns (UserGrpcResponse);
+}
+
+message GetUserByIdRequest {
+  int64 id = 1;
+}
+
+message UserGrpcResponse {
+  int64 id = 1;
+  string email = 2;
+  UserStatus status = 3;
+  UserRole role = 4;
+}

@@ -49,6 +49,7 @@ public class UserProfileService {
 
     private UserProfileResponse toResponse(UserProfile userProfile) {
         return UserProfileResponse.builder()
+                .id(userProfile.getId())
                 .email(userProfile.getEmail())
                 .firstName(userProfile.getFirstName())
                 .lastName(userProfile.getLastName())
