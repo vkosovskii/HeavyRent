@@ -1,0 +1,72 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package equipment;
+
+option java_package = "com.heavyrent.grpc.equipment";
+option java_multiple_files = true;
+
+enum EquipmentType {
+  EXCAVATOR = 0;
+  CRANE = 1;
+  TRUCK = 2;
+  BULLDOZER = 3;
+  LOADER = 4;
+  COMPACTOR = 5;
+  CONCRETE_MIXER = 6;
+  GENERATOR = 7;
+  OTHER = 8;
+}
+
+enum DeliveryType {
+  SELF_PROPELLED = 0;
+  TRAILER_NEEDED = 1;
+  DELIVERY_AVAILABLE = 2;
+  NOT_SPECIFIED = 3;
+}
+
+enum EquipmentStatus {
+  FREE = 0;
+  ON_SITE = 1;
+  MAINTENANCE = 2;
+  UNAVAILABLE = 3;
+  UNVERIFIED = 4;
+}
+
+service EquipmentGrpcService {
+  rpc GetEquipmentById(GetEquipmentByIdRequest) returns (EquipmentGrpcResponse);
+  rpc GetEquipmentsByOwnerId(GetEquipmentsByOwnerIdRequest) returns (EquipmentListResponse);
+}
+
+message GetEquipmentByIdRequest {
+  int64 equipmentId = 1;
+}
+
+message GetEquipmentsByOwnerIdRequest {
+  int64 ownerId = 1;
+}
+
+message EquipmentListResponse {
+  repeated EquipmentGrpcResponse equipment = 1;
+}
+
+message EquipmentGrpcResponse {
+  int64 equipmentId = 1;
+  string registrationNumber = 2;
+  string name = 3;
+  EquipmentType type = 4;
+  string brand = 5;
+  string model = 6;
+  int64 pricePerHourCents = 7;
+  int64 yearOfManufacture = 8;
+  int64 ownerId = 9;
+  bool hasOperator = 10;
+  bool hasAccreditation = 11;
+  DeliveryType deliveryType = 12;
+  EquipmentStatus equipmentStatus = 13;
+  google.protobuf.Timestamp  availableFrom = 14;
+  double latitude = 15;
+  double longitude = 16;
+  google.protobuf.Timestamp createdAt = 17;
+  google.protobuf.Timestamp updatedAt = 18;
+}

@@ -5,17 +5,15 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":common"))
-    // Web — REST endpoints
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    // Resource Server — check JWT token
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    // JPA + Hibernate — for DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    // PostgreSQL
-    runtimeOnly("org.postgresql:postgresql")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.postgresql:postgresql")
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+    implementation(project(":grpc-contracts"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

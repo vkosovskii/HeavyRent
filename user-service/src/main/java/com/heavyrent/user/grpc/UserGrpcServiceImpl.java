@@ -23,6 +23,13 @@ public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImpl
         responseObserver.onCompleted();
     }
 
+    public void getUserByEmail(GetUserByEmailRequest request, StreamObserver<UserGrpcResponse> responseObserver) {
+        String email = request.getEmail();
+        UserGrpcResponse user = toGrpcResponse(service.findUserByEmail(email));
+        responseObserver.onNext(user);
+        responseObserver.onCompleted();
+    }
+
     private UserGrpcResponse toGrpcResponse(UserProfileResponse user) {
         return UserGrpcResponse.newBuilder()
                 .setId(user.id())

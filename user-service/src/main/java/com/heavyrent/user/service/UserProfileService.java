@@ -21,6 +21,7 @@ public class UserProfileService {
 
     @Synchronized
     public UserProfileResponse findOrCreate(String email) {
+        log.info("Find or create user by email: {}", email);
         try {
             return toResponse(userProfileRepository.findByEmail(email).orElseGet(() -> save(email)));
         } catch (DataIntegrityViolationException e) {
@@ -29,13 +30,13 @@ public class UserProfileService {
         }
     }
 
-    private UserProfile save(String email) {
-        UserProfile u = new UserProfile();
-        u.setEmail(email);
-        return userProfileRepository.save(u);
+    public UserProfileResponse findUserByEmail(String email) {
+        log.info("Find user by email: {}", email);
+        return toResponse(userProfileRepository.findByEmail(email).orElseThrow());
     }
 
     public UserProfileResponse updateUserProfile(UserUpdateRequest userProfile, String email) {
+        log.info("Updating user profile for email: {}", email);
         UserProfile u = userProfileRepository.findByEmail(email).orElseThrow();
         u.setPhone(userProfile.phone());
         u.setFirstName(userProfile.firstName());
@@ -44,7 +45,14 @@ public class UserProfileService {
     }
 
     public UserProfileResponse getUserById(Long id) {
+        log.info("Getting user by id: {}", id);
         return toResponse(userProfileRepository.findById(id).orElseThrow());
+    }
+
+    private UserProfile save(String email) {
+        UserProfile u = new UserProfile();
+        u.setEmail(email);
+        return userProfileRepository.save(u);
     }
 
     private UserProfileResponse toResponse(UserProfile userProfile) {

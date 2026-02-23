@@ -21,6 +21,11 @@ enum UserRole {
 
 service UserGrpcService {
   rpc GetUserById (GetUserByIdRequest) returns (UserGrpcResponse);
+  rpc GetUserByEmail (GetUserByEmailRequest) returns (UserGrpcResponse);
+}
+
+message GetUserByEmailRequest {
+  string email = 1;
 }
 
 message GetUserByIdRequest {
