@@ -1,0 +1,115 @@
+services:
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    container_name: heavyrent-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: OZCxzl8DQHOBdJ-dm4_ewA
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - heavyrent-net
+
+  # ─── Keycloak ────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: heavyrent-keycloak
+    command: start-dev
+    volumes:
+      - ./infrastructure/keycloak-kafka-plugin/build/libs/keycloak-kafka-plugin.jar:/opt/keycloak/providers/keycloak-kafka-plugin.jar
+    environment:
+      # Admin credentials (Keycloak 26+)
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+
+      # Подключение к БД
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_secret
+
+      # Логирование (удобно при разработке)
+      KC_LOG_LEVEL: INFO
+
+    ports:
+      - "8080:8080"   # Admin UI и OAuth2 endpoints
+    # Что бы keycloak стартовал после keycloak-db и kafka
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - heavyrent-net
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: heavyrent-keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_secret
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - heavyrent-net
+
+  user-db:
+    image: postgres:16-alpine
+    container_name: heavyrent-user-db
+    environment:
+      POSTGRES_DB: heavyrent_users
+      POSTGRES_USER: user_service
+      POSTGRES_PASSWORD: user_secret
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - heavyrent-net
+
+  equipment-db:
+    image: postgres:16-alpine
+    container_name: heavyrent-equipment-db
+    environment:
+      POSTGRES_DB: heavyrent_equipment
+      POSTGRES_USER: equipment_service
+      POSTGRES_PASSWORD: equipment_secret
+    volumes:
+      - equipment_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U equipment_service" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - heavyrent-net
+
+# ─── Volumes & Networks ────────────────────────────────────
+volumes:
+  keycloak_db_data:
+  kafka_data:
+  equipment_db_data:
+  user_db_data:
+
+networks:
+  heavyrent-net:
+    driver: bridge

@@ -4,12 +4,14 @@ import com.google.protobuf.Timestamp;
 import com.heavyrent.equipment.dto.EquipmentProfileResponse;
 import com.heavyrent.equipment.service.EquipmentProfileService;
 import com.heavyrent.grpc.equipment.*;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @GrpcService
 public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.EquipmentGrpcServiceImplBase {
@@ -22,24 +24,36 @@ public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.Equipment
 
     @Override
     public void getEquipmentById(GetEquipmentByIdRequest request, StreamObserver<EquipmentGrpcResponse> responseObserver) {
-        long equipmentId = request.getEquipmentId();
-        EquipmentGrpcResponse equipmentResponse = toGrpcResponse(equipmentProfileService.findByEquipmentId(equipmentId));
-        responseObserver.onNext(equipmentResponse);
-        responseObserver.onCompleted();
+        try {
+            long equipmentId = request.getEquipmentId();
+            EquipmentGrpcResponse equipmentResponse = toGrpcResponse(equipmentProfileService.findByEquipmentId(equipmentId));
+            responseObserver.onNext(equipmentResponse);
+            responseObserver.onCompleted();
+        } catch (NoSuchElementException e) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Equipment not found with id: " + request.getEquipmentId())
+                    .asRuntimeException());
+        }
     }
 
     @Override
     public void getEquipmentsByOwnerId(GetEquipmentsByOwnerIdRequest request, StreamObserver<EquipmentListResponse> responseObserver) {
-        long ownerId = request.getOwnerId();
-        List<EquipmentProfileResponse> equipments = equipmentProfileService.findByOwnerId(ownerId);
-        EquipmentListResponse.Builder builder = EquipmentListResponse.newBuilder();
+        try {
+            long ownerId = request.getOwnerId();
+            List<EquipmentProfileResponse> equipments = equipmentProfileService.findByOwnerId(ownerId);
+            EquipmentListResponse.Builder builder = EquipmentListResponse.newBuilder();
 
-        equipments.forEach(equipmentProfileResponse ->
-            builder.addEquipment(toGrpcResponse(equipmentProfileResponse))
-        );
+            equipments.forEach(equipmentProfileResponse ->
+                    builder.addEquipment(toGrpcResponse(equipmentProfileResponse))
+            );
 
-        responseObserver.onNext(builder.build());
-        responseObserver.onCompleted();
+            responseObserver.onNext(builder.build());
+            responseObserver.onCompleted();
+        } catch (NoSuchElementException e) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Equipment not found with id: " + request.getOwnerId())
+                    .asRuntimeException());
+        }
     }
 
     private EquipmentGrpcResponse toGrpcResponse(EquipmentProfileResponse profile) {
