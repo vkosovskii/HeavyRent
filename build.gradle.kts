@@ -12,6 +12,10 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "io.spring.dependency-management")
 
+    the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.2")
+    }
+
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(21)
