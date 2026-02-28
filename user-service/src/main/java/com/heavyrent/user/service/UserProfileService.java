@@ -1,5 +1,6 @@
 package com.heavyrent.user.service;
 
+import com.heavyrent.user.dto.KeycloakRequest;
 import com.heavyrent.user.dto.UserProfileResponse;
 import com.heavyrent.user.dto.UserUpdateRequest;
 import com.heavyrent.user.model.UserProfile;
@@ -8,6 +9,9 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -20,44 +24,56 @@ public class UserProfileService {
     }
 
     @Synchronized
-    public UserProfileResponse findOrCreate(String email) {
-        log.info("Find or create user by email: {}", email);
-        try {
-            return toResponse(userProfileRepository.findByEmail(email).orElseGet(() -> save(email)));
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Race condition in findOrCreate for email: {}", email);
-            return toResponse(userProfileRepository.findByEmail(email).orElseThrow());
+    public void createUserProfile(KeycloakRequest request) {
+        log.info("Find or create user by keycloakId: {}", request);
+        UserProfile userProfile = userProfileRepository.findByKeycloakId(request.keycloakId()).orElse(null);
+        if (userProfile == null) {
+            userProfile = new UserProfile();
+            userProfile.setKeycloakId(request.keycloakId());
+            userProfile.setFirstName(request.firstName());
+            userProfile.setLastName(request.lastName());
+            userProfile.setEmail(request.email());
+            userProfile.setPhone(request.phone());
+            userProfile.setRole(request.role());
+            userProfileRepository.save(userProfile);
+        } else {
+            log.error("User profile already exists: {}", userProfile);
+            throw new DataIntegrityViolationException("User profile already exists");
         }
     }
 
-    public UserProfileResponse findUserByEmail(String email) {
-        log.info("Find user by email: {}", email);
-        return toResponse(userProfileRepository.findByEmail(email).orElseThrow());
+    public UserProfileResponse getUserByUuid(UUID publicId) {
+        log.info("Find or get user by public id: {}", publicId);
+        UserProfile userProfile = userProfileRepository.findByPublicId(publicId).orElseThrow(NoSuchElementException::new);
+        return toResponse(userProfile);
     }
 
-    public UserProfileResponse updateUserProfile(UserUpdateRequest userProfile, String email) {
-        log.info("Updating user profile for email: {}", email);
-        UserProfile u = userProfileRepository.findByEmail(email).orElseThrow();
-        u.setPhone(userProfile.phone());
-        u.setFirstName(userProfile.firstName());
-        u.setLastName(userProfile.lastName());
-        return toResponse(userProfileRepository.save(u));
+    public void updateUserProfile(UserUpdateRequest updateRequest, UUID publicId) {
+        log.info("Update user profile: {}", updateRequest);
+        UserProfile userProfile = userProfileRepository.findByPublicId(publicId).orElseThrow(NoSuchElementException::new);
+        userProfile.setLastName(updateRequest.lastName());
+        userProfile.setFirstName(updateRequest.firstName());
+        userProfileRepository.save(userProfile);
     }
 
-    public UserProfileResponse getUserById(Long id) {
-        log.info("Getting user by id: {}", id);
-        return toResponse(userProfileRepository.findById(id).orElseThrow());
+    // TODO need verify service
+    public void requestContactChange() {
+        log.info("Request contact change");
     }
 
-    private UserProfile save(String email) {
-        UserProfile u = new UserProfile();
-        u.setEmail(email);
-        return userProfileRepository.save(u);
+    // TODO need verify service
+    public void requestRoleChange() {
+        log.info("Request role change");
+    }
+
+    // TODO need verify service
+    public void updateStatus() {
+        log.info("Update status");
     }
 
     private UserProfileResponse toResponse(UserProfile userProfile) {
         return UserProfileResponse.builder()
-                .id(userProfile.getId())
+                .publicId(userProfile.getPublicId())
                 .email(userProfile.getEmail())
                 .firstName(userProfile.getFirstName())
                 .lastName(userProfile.getLastName())

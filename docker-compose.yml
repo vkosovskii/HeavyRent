@@ -76,6 +76,8 @@ services:
       POSTGRES_DB: heavyrent_users
       POSTGRES_USER: user_service
       POSTGRES_PASSWORD: user_secret
+    ports:
+      - "5433:5432"
     volumes:
       - user_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -93,6 +95,8 @@ services:
       POSTGRES_DB: heavyrent_equipment
       POSTGRES_USER: equipment_service
       POSTGRES_PASSWORD: equipment_secret
+    ports:
+      - "5434:5432"
     volumes:
       - equipment_db_data:/var/lib/postgresql/data
     healthcheck:

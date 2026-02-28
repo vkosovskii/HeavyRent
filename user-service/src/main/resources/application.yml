@@ -12,10 +12,9 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/heavyrent_users
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
+   url: jdbc:postgresql://localhost:5433/heavyrent_users
+   username: user_service
+   password: user_secret
 
   jpa:
     open-in-view: false
@@ -31,4 +30,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8080/oauth2/jwks
+          issuer-uri: http://localhost:8080/realms/heavyrent
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: user-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer

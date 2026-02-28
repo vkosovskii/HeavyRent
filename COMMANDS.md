@@ -81,31 +81,33 @@
     -H 'Content-Type: application/x-www-form-urlencoded' \
     -d 'client_id=admin-cli&username=admin&password=admin&grant_type=password' \
     | grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
-```
+
 ### Проверить что токен получен
-```bash
+
    echo "Token received: ${TOKEN:0:20}..."
-```
 
 ### Создать пользователя
-```bash
+
   curl -s -o /dev/null -w "%{http_code}" \
     -X POST 'http://localhost:8080/admin/realms/heavyrent/users' \
     -H "Authorization: Bearer $TOKEN" \
     -H 'Content-Type: application/json' \
     -d '{
-      "username": "ivan.petrov",
-      "email": "ivan@heavyrent.com",
-      "firstName": "Ivan",
-      "lastName": "Petrov",
-      "enabled": true,
-      "emailVerified": true,
-      "credentials": [{"type": "password", "value": "Test1234!", "temporary": false}]
-    }'
-```
+          "username": "alex.renter",
+          "email": "alex@heavyrent.com",
+          "firstName": "Alex",
+          "lastName": "Renter",
+          "enabled": true,
+          "emailVerified": true,
+          "realmRoles": ["RENTER"],
+          "attributes": {
+             "phone": ["+7-999-999-99-99"]
+          },
+          "credentials": [{"type": "password", "value": "Test1234!", "temporary": false}]
+        }'
 
 ### Получить список пользователей
-```bash
+
   curl -s 'http://localhost:8080/admin/realms/heavyrent/users' \
     -H "Authorization: Bearer $TOKEN" | jq .
 ```
