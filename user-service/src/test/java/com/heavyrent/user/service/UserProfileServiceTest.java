@@ -1,5 +1,6 @@
 package com.heavyrent.user.service;
 
+import com.heavyrent.user.base.BaseTest;
 import com.heavyrent.user.dto.KeycloakRequest;
 import com.heavyrent.user.dto.UserProfileResponse;
 import com.heavyrent.user.dto.UserUpdateRequest;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserProfileServiceTest {
+class UserProfileServiceTest extends BaseTest {
 
     @Mock
     UserProfileRepository repository;
@@ -34,7 +35,7 @@ class UserProfileServiceTest {
     void createUserProfile_whenUserNotExists_shouldSaveAndReturn() {
         // ARRANGE
         KeycloakRequest request = KeycloakRequest.builder()
-                .keycloakId("kc-uuid-123")
+                .keycloakId(keycloakId)
                 .email("ivan@heavyrent.com")
                 .firstName("Ivan")
                 .lastName("Petrov")
@@ -42,7 +43,7 @@ class UserProfileServiceTest {
                 .role(UserProfile.Role.RENTER)
                 .build();
 
-        when(repository.findByKeycloakId("kc-uuid-123")).thenReturn(Optional.empty());
+        when(repository.findByKeycloakId(keycloakId)).thenReturn(Optional.empty());
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // ACT
@@ -56,7 +57,7 @@ class UserProfileServiceTest {
     void createUserProfile_whenUserAlreadyExists_shouldThrow() {
         // ARRANGE
         KeycloakRequest request = KeycloakRequest.builder()
-                .keycloakId("kc-uuid-123")
+                .keycloakId(UUID.fromString("c0bb46fd-d102-49fc-b293-bd94a1be3705"))
                 .email("ivan@heavyrent.com")
                 .firstName("Ivan")
                 .lastName("Petrov")
@@ -65,9 +66,9 @@ class UserProfileServiceTest {
                 .build();
 
         UserProfile existing = new UserProfile();
-        existing.setKeycloakId("kc-uuid-123");
+        existing.setKeycloakId(keycloakId);
 
-        when(repository.findByKeycloakId("kc-uuid-123")).thenReturn(Optional.of(existing));
+        when(repository.findByKeycloakId(keycloakId)).thenReturn(Optional.of(existing));
 
         // ACT + ASSERT
         assertThrows(DataIntegrityViolationException.class, () -> service.createUserProfile(request));

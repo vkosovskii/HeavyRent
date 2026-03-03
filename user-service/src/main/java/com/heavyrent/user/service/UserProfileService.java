@@ -48,6 +48,12 @@ public class UserProfileService {
         return toResponse(userProfile);
     }
 
+    public UserProfileResponse getUserByKeycloakId(UUID keycloakId) {
+        log.info("Find user by keycloak id: {}", keycloakId);
+        UserProfile userProfile = userProfileRepository.findByKeycloakId(keycloakId).orElseThrow(NoSuchElementException::new);
+        return toResponse(userProfile);
+    }
+
     public void updateUserProfile(UserUpdateRequest updateRequest, UUID publicId) {
         log.info("Update user profile: {}", updateRequest);
         UserProfile userProfile = userProfileRepository.findByPublicId(publicId).orElseThrow(NoSuchElementException::new);
@@ -73,6 +79,7 @@ public class UserProfileService {
 
     private UserProfileResponse toResponse(UserProfile userProfile) {
         return UserProfileResponse.builder()
+                .keycloakId(userProfile.getKeycloakId())
                 .publicId(userProfile.getPublicId())
                 .email(userProfile.getEmail())
                 .firstName(userProfile.getFirstName())

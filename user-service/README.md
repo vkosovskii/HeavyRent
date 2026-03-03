@@ -75,13 +75,6 @@ Events without `data` or `phone` are rejected with a warning log — they are ol
 
 Defined in `grpc-contracts/src/main/proto/user.proto`.
 
-```protobuf
-service UserGrpcService {
-  rpc GetUserByKeycloakId (GetUserByKeycloakIdRequest) returns (UserResponse);
-  rpc GetUserByPublicId   (GetUserByPublicIdRequest)   returns (UserResponse);
-}
-```
-
 ### Test with grpcurl
 
 ```bash

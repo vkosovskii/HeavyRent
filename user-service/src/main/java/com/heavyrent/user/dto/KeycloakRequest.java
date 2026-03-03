@@ -4,9 +4,11 @@ package com.heavyrent.user.dto;
 import com.heavyrent.user.model.UserProfile;
 import lombok.Builder;
 
+import java.util.UUID;
+
 @Builder
 public record KeycloakRequest(
-        String keycloakId,
+        UUID keycloakId,
         String email,
         String firstName,
         String lastName,

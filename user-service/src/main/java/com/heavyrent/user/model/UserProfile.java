@@ -24,7 +24,7 @@ public class UserProfile {
     @Column(unique = true, nullable = false, updatable = false)
     private UUID publicId;
     @Column(unique = true, nullable = false)
-    private String keycloakId;
+    private UUID keycloakId;
     @Column(nullable = false)
     private String firstName;
     @Column(nullable = false)

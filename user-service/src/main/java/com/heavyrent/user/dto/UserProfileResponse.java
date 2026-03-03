@@ -9,6 +9,7 @@ import java.util.UUID;
 @Builder
 public record UserProfileResponse(
         long id,
+        UUID keycloakId,
         UUID publicId,
         String email,
         String firstName,

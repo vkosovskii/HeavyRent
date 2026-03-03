@@ -10,6 +10,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -51,7 +52,7 @@ public class UserRegistrationConsumer {
             log.info("Processing registration for userId: {}, email: {}", userId, email);
 
             KeycloakRequest keycloakRequest = KeycloakRequest.builder()
-                    .keycloakId(userId)
+                    .keycloakId(UUID.fromString(userId))
                     .email(email)
                     .firstName(data.path("firstName").asText())
                     .lastName(data.path("lastName").asText())
