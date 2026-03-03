@@ -1,6 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/timestamp.proto";
-
+import "google/api/annotations.proto";
 
 package user;
 
@@ -22,21 +22,40 @@ enum UserRole {
 }
 
 service UserGrpcService {
-  rpc GetUserByPublicId (GetUserByPublicIdRequest) returns (UserGrpcResponse);
+  rpc GetUserByPublicId (GetUserByPublicIdRequest) returns (UserGrpcResponse){
+    option (google.api.http) = {
+      get: "/api/users/{public_id}"
+    };
+  }
+
+  rpc GetUserByKeycloakId (GetUserByKeycloakIdRequest) returns (UserGrpcResponse);
+
+  rpc GetCurrentUser (GetCurrentUserRequest) returns (UserGrpcResponse) {
+    option (google.api.http) = {
+      get: "/api/users/me"
+    };
+  }
 }
 
 message GetUserByPublicIdRequest {
-  string publicId = 1;
+  string public_id = 1;
 }
 
+message GetUserByKeycloakIdRequest {
+  string keycloak_id = 1;
+}
+
+message GetCurrentUserRequest {}
+
 message UserGrpcResponse {
-  string publicId = 1;
-  string email = 2;
-  string firstName = 3;
-  string lastName = 4;
-  string phone = 5;
-  bool isVerified = 6;
-  UserStatus status = 7;
-  UserRole role = 8;
-  google.protobuf.Timestamp  updatedAt = 9;
+  string keycloak_id = 1;
+  string public_id = 2;
+  string email = 3;
+  string first_name = 4;
+  string last_name = 5;
+  string phone = 6;
+  bool is_verified = 7;
+  UserStatus status = 8;
+  UserRole role = 9;
+  google.protobuf.Timestamp  updated_at = 10;
 }
