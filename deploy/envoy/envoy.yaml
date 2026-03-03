@@ -1,0 +1,118 @@
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+
+  clusters:
+
+    # Keycloak — только для скачивания JWKS
+    - name: keycloak_cluster
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: keycloak_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: keycloak
+                      port_value: 8080
+
+    # user-service — gRPC, на хост машине
+    - name: user_service_cluster
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: user_service_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: host.docker.internal
+                      port_value: 9091
+
+  listeners:
+    - name: main_listener
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8000
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: AUTO
+
+                access_log:
+                  - name: envoy.access_loggers.stdout
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+
+                # ── HTTP Filters (порядок важен) ──
+                http_filters:
+
+                  # 1. JWT валидация
+                  - name: envoy.filters.http.jwt_authn
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                      providers:
+                        keycloak_jwt:
+                          issuer: "http://localhost:8080/realms/heavyrent"
+                          remote_jwks:
+                            http_uri:
+                              uri: "http://keycloak:8080/realms/heavyrent/protocol/openid-connect/certs"
+                              cluster: keycloak_cluster
+                              timeout: 5s
+                            cache_duration: 300s
+                          forward: true
+                          claim_to_headers:
+                            - header_name: x-user-id
+                              claim_name: sub
+                            - header_name: x-user-role
+                              claim_name: realm_access/roles/0
+                      rules:
+                        - match:
+                            prefix: "/api/"
+                          requires:
+                            provider_name: keycloak_jwt
+
+                  # 2. REST → gRPC transcoding
+                  - name: envoy.filters.http.grpc_json_transcoder
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+                      proto_descriptor: "/etc/envoy/proto.pb"
+                      services:
+                        - "user.UserGrpcService"
+                      print_options:
+                        add_whitespace: true
+                        always_print_primitive_fields: true
+
+                  # 3. Router — всегда последний
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+                # ── Route table ──
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains: [ "*" ]
+                      routes:
+                        - match:
+                            prefix: "/user.UserGrpcService/"
+                          route:
+                            cluster: user_service_cluster
+                            timeout: 10s
