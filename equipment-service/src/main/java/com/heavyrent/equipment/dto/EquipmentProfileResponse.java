@@ -4,18 +4,18 @@ import com.heavyrent.equipment.model.EquipmentProfile;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder
 public record EquipmentProfileResponse(
-        long equipmentId,
-        String registrationNumber,
         String name,
+        UUID publicId,
         EquipmentProfile.EquipmentType type,
+        String registrationNumber,
         String brand,
         String model,
         long pricePerHourCents,
         long yearOfManufacture,
-        long ownerId,
         boolean hasOperator,
         boolean hasAccreditation,
         EquipmentProfile.DeliveryType deliveryType,
@@ -27,3 +27,5 @@ public record EquipmentProfileResponse(
         LocalDateTime updatedAt
 ) {
 }
+
+

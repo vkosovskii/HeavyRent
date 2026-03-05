@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -19,7 +21,7 @@ public class EquipmentProfileService {
         this.equipmentProfileRepository = equipmentProfileRepository;
     }
 
-    public List<EquipmentProfileResponse> findByOwnerId(long ownerId) {
+    public List<EquipmentProfileResponse> findByOwnerId(UUID ownerId) {
         log.info("Finding equipment by ownerId: {}", ownerId);
         List<EquipmentProfile> equipmentProfiles = equipmentProfileRepository.findByOwnerId(ownerId);
         log.info("Found {} equipment profiles for ownerId: {}", equipmentProfiles.size(), ownerId);
@@ -28,29 +30,31 @@ public class EquipmentProfileService {
                 .toList();
     }
 
-    public EquipmentProfileResponse findByEquipmentId(long equipmentId) {
+    public EquipmentProfileResponse findByEquipmentId(UUID equipmentId) {
         log.info("Finding equipment by id: {}", equipmentId);
-        return toResponse(equipmentProfileRepository.findEquipmentProfileById(equipmentId).orElseThrow());
+        return toResponse(equipmentProfileRepository.findEquipmentProfileById(equipmentId)
+                .orElseThrow(() -> new NoSuchElementException("Equipment not found: " + equipmentId)));
     }
 
-    public EquipmentProfileResponse createEquipmentProfile(EquipmentProfileRequest request, long ownerId) {
+    public EquipmentProfileResponse createEquipmentProfile(EquipmentProfileRequest request, UUID ownerId) {
         log.info("Creating equipment profile for ownerId: {}", ownerId);
         EquipmentProfile profile = new EquipmentProfile();
         profile.setOwnerId(ownerId);
         EquipmentProfileResponse response = toResponse(equipmentProfileRepository.save(fillInEquipmentProfile(profile, request)));
-        log.info("Created equipment profile with id: {}", response.equipmentId());
+        log.info("Created equipment profile with id: {}", response.publicId());
         return response;
     }
 
-    public EquipmentProfileResponse updateEquipmentProfile(EquipmentProfileRequest request, long equipmentId) {
+    public EquipmentProfileResponse updateEquipmentProfile(EquipmentProfileRequest request, UUID equipmentId) {
         log.info("Updating equipment profile with id: {}", equipmentId);
-        EquipmentProfile profile = equipmentProfileRepository.findEquipmentProfileById(equipmentId).orElseThrow();
+        EquipmentProfile profile = equipmentProfileRepository.findEquipmentProfileById(equipmentId)
+                .orElseThrow(() -> new NoSuchElementException("Equipment not found: " + equipmentId));
         return toResponse(equipmentProfileRepository.save(fillInEquipmentProfile(profile, request)));
     }
 
-    public void deleteEquipmentProfile(long equipmentId) {
+    public void deleteEquipmentProfile(UUID equipmentId) {
         log.info("Deleting equipment profile with id: {}", equipmentId);
-        equipmentProfileRepository.deleteById(equipmentId);
+        equipmentProfileRepository.deleteByPublicId(equipmentId);
         log.info("Deleted equipment profile with id: {}", equipmentId);
     }
 
@@ -74,19 +78,18 @@ public class EquipmentProfileService {
 
     private EquipmentProfileResponse toResponse(EquipmentProfile equipmentProfile) {
         return EquipmentProfileResponse.builder()
-                .equipmentId(equipmentProfile.getId())
-                .registrationNumber(equipmentProfile.getRegistrationNumber())
                 .name(equipmentProfile.getName())
+                .publicId(equipmentProfile.getPublicId())
                 .type(equipmentProfile.getType())
+                .registrationNumber(equipmentProfile.getRegistrationNumber())
                 .brand(equipmentProfile.getBrand())
                 .model(equipmentProfile.getModel())
-                .equipmentStatus(equipmentProfile.getEquipmentStatus())
                 .pricePerHourCents(equipmentProfile.getPricePerHourCents())
                 .yearOfManufacture(equipmentProfile.getYearOfManufacture())
-                .ownerId(equipmentProfile.getOwnerId())
                 .hasOperator(equipmentProfile.isHasOperator())
                 .hasAccreditation(equipmentProfile.isHasAccreditation())
                 .deliveryType(equipmentProfile.getDeliveryType())
+                .equipmentStatus(equipmentProfile.getEquipmentStatus())
                 .availableFrom(equipmentProfile.getAvailableFrom())
                 .latitude(equipmentProfile.getLatitude())
                 .longitude(equipmentProfile.getLongitude())

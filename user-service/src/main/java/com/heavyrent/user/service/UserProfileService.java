@@ -79,7 +79,6 @@ public class UserProfileService {
 
     private UserProfileResponse toResponse(UserProfile userProfile) {
         return UserProfileResponse.builder()
-                .keycloakId(userProfile.getKeycloakId())
                 .publicId(userProfile.getPublicId())
                 .email(userProfile.getEmail())
                 .firstName(userProfile.getFirstName())

@@ -48,14 +48,13 @@ message GetUserByKeycloakIdRequest {
 message GetCurrentUserRequest {}
 
 message UserGrpcResponse {
-  string keycloak_id = 1;
-  string public_id = 2;
-  string email = 3;
-  string first_name = 4;
-  string last_name = 5;
-  string phone = 6;
-  bool is_verified = 7;
-  UserStatus status = 8;
-  UserRole role = 9;
-  google.protobuf.Timestamp  updated_at = 10;
+  string public_id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  bool is_verified = 6;
+  UserStatus status = 7;
+  UserRole role = 8;
+  google.protobuf.Timestamp  updated_at = 9;
 }

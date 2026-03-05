@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -19,6 +20,12 @@ public class EquipmentProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(unique = true, nullable = false,  updatable = false)
+    private UUID publicId;
+
+    @Column(nullable = false)
+    private UUID ownerId;
+
     private String name;
 
     @Enumerated(EnumType.STRING)
@@ -30,7 +37,7 @@ public class EquipmentProfile {
     private String model;
     private long pricePerHourCents;
     private long yearOfManufacture;
-    private long ownerId;
+
     private boolean hasOperator;
     private boolean hasAccreditation;
 
@@ -50,15 +57,9 @@ public class EquipmentProfile {
 
     @PrePersist
     protected void onCreate() {
-        deliveryType = DeliveryType.NOT_SPECIFIED;
-        equipmentStatus = EquipmentStatus.UNVERIFIED;
-        type = EquipmentType.OTHER;
-        hasAccreditation = false;
+        publicId = UUID.randomUUID();
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        //TODO don't forget to remove 0d
-        latitude = 0d;
-        longitude = 0d;
+        updatedAt = createdAt;
     }
 
     @PreUpdate
@@ -67,15 +68,24 @@ public class EquipmentProfile {
     }
 
     public enum DeliveryType {
-        SELF_PROPELLED, TRAILER_NEEDED, DELIVERY_AVAILABLE, NOT_SPECIFIED
+        DELIVERY_TYPE_UNSPECIFIED,
+        TRAILER_NEEDED,
+        DELIVERY_AVAILABLE,
+        SELF_PROPELLED,
+        DELIVERY_NOT_DETERMINED
     }
 
     public enum EquipmentStatus {
-        FREE, ON_SITE, MAINTENANCE, UNAVAILABLE, UNVERIFIED
+        EQUIPMENT_STATUS_UNSPECIFIED,
+        ON_SITE,
+        MAINTENANCE,
+        UNAVAILABLE,
+        FREE,
+        STATUS_NOT_DETERMINED
     }
 
     public enum EquipmentType {
-        EXCAVATOR,
+        EQUIPMENT_TYPE_UNSPECIFIED,
         CRANE,
         TRUCK,
         BULLDOZER,
@@ -83,7 +93,7 @@ public class EquipmentProfile {
         COMPACTOR,
         CONCRETE_MIXER,
         GENERATOR,
-        OTHER
+        OTHER,
+        EXCAVATOR
     }
-
 }

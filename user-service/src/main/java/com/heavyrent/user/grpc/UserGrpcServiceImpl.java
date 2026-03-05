@@ -62,15 +62,14 @@ public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImpl
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (NoSuchElementException e) {
-            responseObserver.onError(
-                    Status.NOT_FOUND.withDescription("User not found with keycloak")
-                            .asRuntimeException());
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("User not found with keycloak")
+                    .asRuntimeException());
         }
     }
 
     private UserGrpcResponse toGrpcResponse(UserProfileResponse user) {
         return UserGrpcResponse.newBuilder()
-                .setKeycloakId(user.keycloakId().toString())
                 .setPublicId(user.publicId().toString())
                 .setEmail(user.email())
                 .setFirstName(user.firstName())

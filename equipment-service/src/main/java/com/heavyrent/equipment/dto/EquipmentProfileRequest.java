@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @Builder
 public record EquipmentProfileRequest(
         String name,
-        String registrationNumber,
         EquipmentProfile.EquipmentType type,
+        String registrationNumber,
         String brand,
         String model,
         long pricePerHourCents,
@@ -23,3 +23,6 @@ public record EquipmentProfileRequest(
         Double longitude
 ) {
 }
+
+
+

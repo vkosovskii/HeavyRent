@@ -6,8 +6,11 @@ import com.heavyrent.equipment.model.EquipmentProfile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public abstract class BaseTest {
+
+    UUID equipmentId = UUID.randomUUID();
 
     public EquipmentProfile getEquipmentProfile() {
         EquipmentProfile equipmentProfile = new EquipmentProfile();
@@ -19,7 +22,7 @@ public abstract class BaseTest {
         equipmentProfile.setModel("320D");
         equipmentProfile.setPricePerHourCents(150000L);
         equipmentProfile.setYearOfManufacture(2019L);
-        equipmentProfile.setOwnerId(1L);
+        equipmentProfile.setOwnerId(equipmentId);
         equipmentProfile.setHasOperator(true);
         equipmentProfile.setHasAccreditation(true);
         equipmentProfile.setDeliveryType(EquipmentProfile.DeliveryType.SELF_PROPELLED);

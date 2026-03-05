@@ -1,5 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
 
 package equipment;
 
@@ -7,7 +9,7 @@ option java_package = "com.heavyrent.grpc.equipment";
 option java_multiple_files = true;
 
 enum EquipmentType {
-  EXCAVATOR = 0;
+  EQUIPMENT_TYPE_UNSPECIFIED = 0;
   CRANE = 1;
   TRUCK = 2;
   BULLDOZER = 3;
@@ -16,57 +18,98 @@ enum EquipmentType {
   CONCRETE_MIXER = 6;
   GENERATOR = 7;
   OTHER = 8;
+  EXCAVATOR = 9;
 }
 
 enum DeliveryType {
-  SELF_PROPELLED = 0;
+  DELIVERY_TYPE_UNSPECIFIED = 0;
   TRAILER_NEEDED = 1;
   DELIVERY_AVAILABLE = 2;
-  NOT_SPECIFIED = 3;
+  SELF_PROPELLED = 3;
+  DELIVERY_NOT_DETERMINED = 4;
 }
 
 enum EquipmentStatus {
-  FREE = 0;
+  EQUIPMENT_STATUS_UNSPECIFIED = 0;
   ON_SITE = 1;
   MAINTENANCE = 2;
   UNAVAILABLE = 3;
-  UNVERIFIED = 4;
+  FREE = 4;
+  STATUS_NOT_DETERMINED = 5;
 }
 
 service EquipmentGrpcService {
-  rpc GetEquipmentById(GetEquipmentByIdRequest) returns (EquipmentGrpcResponse);
-  rpc GetEquipmentsByOwnerId(GetEquipmentsByOwnerIdRequest) returns (EquipmentListResponse);
+  rpc GetEquipmentById(GetEquipmentByIdRequest) returns (EquipmentGrpcResponse) {
+    option (google.api.http) = {
+      get: "/api/equipment/{equipment_id}"
+    };
+  }
+  rpc CreateEquipment (EquipmentCreateRequest) returns (EquipmentGrpcResponse) {
+    option (google.api.http) = {
+      post: "/api/equipment"
+    };
+  }
+  rpc GetListEquipment(ListEquipmentRequest) returns (EquipmentListResponse) {
+    option (google.api.http) = {
+      get: "/api/equipment"
+    };
+  }
 }
 
 message GetEquipmentByIdRequest {
-  int64 equipmentId = 1;
+  string equipment_id = 1;
 }
 
-message GetEquipmentsByOwnerIdRequest {
-  int64 ownerId = 1;
+message ListEquipmentRequest {
+  string owner_id = 1;
+  string name = 2;
+  string model = 3;
+  google.protobuf.Int32Value max_price_per_hour_cents = 4;
+  EquipmentType type = 5;
+  EquipmentStatus equipment_status = 6;
+  int32 page = 7;
+  int32 page_size = 8;
 }
 
 message EquipmentListResponse {
   repeated EquipmentGrpcResponse equipment = 1;
+  int32 total_count = 2;
+}
+
+message EquipmentCreateRequest {
+  string name = 1;
+  EquipmentType type = 2;
+  string registration_number = 3;
+  string brand = 4;
+  string model = 5;
+  int64 price_per_hour_cents = 6;
+  int32 year_of_manufacture = 7;
+  bool has_operator = 8;
+  bool has_accreditation = 9;
+  DeliveryType delivery_type = 10;
+  EquipmentStatus equipment_status = 11;
+  google.protobuf.Timestamp available_from = 12;
+  double latitude = 13;
+  double longitude = 14;
 }
 
 message EquipmentGrpcResponse {
-  int64 equipmentId = 1;
-  string registrationNumber = 2;
-  string name = 3;
-  EquipmentType type = 4;
+  string name = 1;
+  string equipment_id = 2;
+  EquipmentType type = 3;
+  string registration_number = 4;
   string brand = 5;
   string model = 6;
-  int64 pricePerHourCents = 7;
-  int64 yearOfManufacture = 8;
-  int64 ownerId = 9;
-  bool hasOperator = 10;
-  bool hasAccreditation = 11;
-  DeliveryType deliveryType = 12;
-  EquipmentStatus equipmentStatus = 13;
-  google.protobuf.Timestamp  availableFrom = 14;
-  double latitude = 15;
-  double longitude = 16;
-  google.protobuf.Timestamp createdAt = 17;
-  google.protobuf.Timestamp updatedAt = 18;
+  int64 price_per_hour_cents = 7;
+  int32 year_of_manufacture = 8;
+  bool has_operator = 9;
+  bool has_accreditation = 10;
+  DeliveryType delivery_type = 11;
+  EquipmentStatus equipment_status = 12;
+  google.protobuf.Timestamp available_from = 13;
+  double latitude = 14;
+  double longitude = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp updated_at = 17;
 }
+
