@@ -1,10 +1,8 @@
 package com.heavyrent.equipment.grpc;
 
-import com.google.protobuf.Timestamp;
 import com.heavyrent.equipment.dto.EquipmentFilterRequest;
 import com.heavyrent.equipment.dto.EquipmentProfileRequest;
 import com.heavyrent.equipment.dto.EquipmentProfileResponse;
-import com.heavyrent.equipment.model.EquipmentProfile;
 import com.heavyrent.equipment.service.EquipmentProfileService;
 import com.heavyrent.grpc.common.UserContext;
 import com.heavyrent.grpc.common.UserContextHolder;
@@ -15,10 +13,10 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+
+import static com.heavyrent.equipment.mapper.EquipmentMapper.*;
 
 @GrpcService
 public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.EquipmentGrpcServiceImplBase {
@@ -85,69 +83,29 @@ public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.Equipment
                     .name(request.getName())
                     .model(request.getModel())
                     .maxPricePerHourCents(maxPricePerHourCents)
-                    .type(EquipmentProfile.EquipmentType.valueOf(request.getType().name()))
-                    .equipmentStatus(EquipmentProfile.EquipmentStatus.valueOf(request.getEquipmentStatus().name()))
+                    .type(toEntityType(request.getType()))
+                    .equipmentStatus(toEntityStatus(request.getEquipmentStatus()))
                     .build();
             EquipmentListResponse.Builder response = EquipmentListResponse.newBuilder();
             Page<EquipmentProfileResponse> equipmentPage = service.findAll(filterRequest, request.getPage(), request.getPageSize());
             equipmentPage.forEach(equipment ->
-                response.addEquipment(toGrpcResponse(equipment))
+                    response.addEquipment(toGrpcResponse(equipment))
             );
             response.setTotalCount((int) equipmentPage.getTotalElements());
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
+        } catch (IllegalArgumentException e) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("Invalid request: " + e.getMessage())
+                    .asRuntimeException());
         } catch (NoSuchElementException e) {
             responseObserver.onError(Status.NOT_FOUND
                     .withDescription("Equipment not found with filters")
                     .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("Internal server error")
+                    .asRuntimeException());
         }
-    }
-
-    private EquipmentProfileRequest toRequest(EquipmentCreateRequest request) {
-        return EquipmentProfileRequest.builder()
-                .name(request.getName())
-                .type(EquipmentProfile.EquipmentType.valueOf(request.getType().name()))
-                .registrationNumber(request.getRegistrationNumber())
-                .brand(request.getBrand())
-                .model(request.getModel())
-                .pricePerHourCents(request.getPricePerHourCents())
-                .yearOfManufacture(request.getYearOfManufacture())
-                .hasOperator(request.getHasOperator())
-                .hasAccreditation(request.getHasAccreditation())
-                .deliveryType(EquipmentProfile.DeliveryType.valueOf(request.getDeliveryType().name()))
-                .equipmentStatus(EquipmentProfile.EquipmentStatus.valueOf(request.getEquipmentStatus().name()))
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
-                .build();
-    }
-
-    private EquipmentGrpcResponse toGrpcResponse(EquipmentProfileResponse response) {
-        return EquipmentGrpcResponse.newBuilder()
-                .setName(response.name())
-                .setEquipmentId(response.publicId().toString())
-                .setType(EquipmentType.valueOf(response.type().name()))
-                .setRegistrationNumber(response.registrationNumber())
-                .setBrand(response.brand())
-                .setModel(response.model())
-                .setPricePerHourCents(response.pricePerHourCents())
-                .setHasAccreditation(response.hasAccreditation())
-                .setDeliveryType(DeliveryType.valueOf(response.deliveryType().name()))
-                .setEquipmentStatus(EquipmentStatus.valueOf(response.equipmentStatus().name()))
-                .setLatitude(response.latitude())
-                .setLongitude(response.longitude())
-                .setCreatedAt(toTimestamp(response.createdAt()))
-                .setUpdatedAt(toTimestamp(response.updatedAt()))
-                .build();
-    }
-
-    private Timestamp toTimestamp(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            return null;
-        }
-
-        return Timestamp.newBuilder()
-                .setSeconds(dateTime.toEpochSecond(ZoneOffset.UTC))
-                .setNanos(dateTime.getNano())
-                .build();
     }
 }
