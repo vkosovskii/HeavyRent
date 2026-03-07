@@ -4,9 +4,11 @@ import com.heavyrent.equipment.model.EquipmentProfile;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder
 public record EquipmentProfileRequest(
+        UUID ownerPublicId,
         String name,
         EquipmentProfile.EquipmentType type,
         String registrationNumber,
