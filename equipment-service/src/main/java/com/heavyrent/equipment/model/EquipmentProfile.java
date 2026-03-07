@@ -20,11 +20,13 @@ public class EquipmentProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(unique = true, nullable = false,  updatable = false)
+    @Column(unique = true, nullable = false, updatable = false)
     private UUID publicId;
 
     @Column(nullable = false)
-    private UUID ownerId;
+    private UUID ownerKeycloakId;
+    @Column(nullable = false)
+    private UUID ownerPublicId;
 
     private String name;
 
