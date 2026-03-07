@@ -6,12 +6,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.UUID;
 
 public class EquipmentSpecification {
-    public static Specification<EquipmentProfile> byOwnerKeycloakId(UUID ownerKeycloakId) {
-        return (root, query, cb) -> {
-            if (ownerKeycloakId == null) return null;
-            return cb.equal(root.get("ownerKeycloakId"), ownerKeycloakId);
-        };
-    }
     public static Specification<EquipmentProfile> byOwnerPublicId(UUID ownerPublicId) {
         return (root, query, cb) -> {
             if (ownerPublicId == null) return null;

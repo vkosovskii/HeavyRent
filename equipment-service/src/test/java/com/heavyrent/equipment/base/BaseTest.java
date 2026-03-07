@@ -4,8 +4,6 @@ import com.heavyrent.equipment.dto.EquipmentProfileRequest;
 import com.heavyrent.equipment.model.EquipmentProfile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public abstract class BaseTest {

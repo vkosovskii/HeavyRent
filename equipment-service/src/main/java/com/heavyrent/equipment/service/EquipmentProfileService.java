@@ -41,7 +41,7 @@ public class EquipmentProfileService {
 
     public EquipmentProfileResponse findByEquipmentId(UUID equipmentId) {
         log.info("Finding equipment by id: {}", equipmentId);
-        return toResponse(equipmentProfileRepository.findEquipmentProfileById(equipmentId)
+        return toResponse(equipmentProfileRepository.findEquipmentPublicById(equipmentId)
                 .orElseThrow(() -> new NoSuchElementException("Equipment not found: " + equipmentId)));
     }
 
@@ -57,7 +57,7 @@ public class EquipmentProfileService {
 
     public EquipmentProfileResponse updateEquipmentProfile(EquipmentProfileRequest request, UUID equipmentId) {
         log.info("Updating equipment profile with id: {}", equipmentId);
-        EquipmentProfile profile = equipmentProfileRepository.findEquipmentProfileById(equipmentId)
+        EquipmentProfile profile = equipmentProfileRepository.findEquipmentPublicById(equipmentId)
                 .orElseThrow(() -> new NoSuchElementException("Equipment not found: " + equipmentId));
         return toResponse(equipmentProfileRepository.save(fillInEquipmentProfile(profile, request)));
     }

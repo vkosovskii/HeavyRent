@@ -61,7 +61,7 @@ class EquipmentProfileServiceTest extends BaseTest {
         assertNotNull(result);
         assertEquals(1, result.size());
 
-        EquipmentProfileResponse response = result.get(0);
+        EquipmentProfileResponse response = result.getFirst();
         assertEquals(equipmentProfile.getPublicId(), response.publicId());
         assertEquals(equipmentProfile.getName(), response.name());
         assertEquals(equipmentProfile.getType(), response.type());
@@ -99,7 +99,7 @@ class EquipmentProfileServiceTest extends BaseTest {
         UUID equipmentPublicId = UUID.randomUUID();
         equipmentProfile.setPublicId(equipmentPublicId);
 
-        when(equipmentProfileRepository.findEquipmentProfileById(equipmentPublicId))
+        when(equipmentProfileRepository.findEquipmentPublicById(equipmentPublicId))
                 .thenReturn(Optional.of(equipmentProfile));
 
         EquipmentProfileResponse result = equipmentProfileService.findByEquipmentId(equipmentPublicId);
@@ -117,7 +117,7 @@ class EquipmentProfileServiceTest extends BaseTest {
     void findByEquipmentId_shouldThrow_whenEquipmentNotFound() {
         UUID equipmentPublicId = UUID.randomUUID();
 
-        when(equipmentProfileRepository.findEquipmentProfileById(equipmentPublicId))
+        when(equipmentProfileRepository.findEquipmentPublicById(equipmentPublicId))
                 .thenReturn(Optional.empty());
 
         NoSuchElementException exception = assertThrows(
@@ -126,7 +126,7 @@ class EquipmentProfileServiceTest extends BaseTest {
         );
 
         assertEquals("Equipment not found: " + equipmentPublicId, exception.getMessage());
-        verify(equipmentProfileRepository).findEquipmentProfileById(equipmentPublicId);
+        verify(equipmentProfileRepository).findEquipmentPublicById(equipmentPublicId);
     }
 
     @Test
@@ -178,7 +178,7 @@ class EquipmentProfileServiceTest extends BaseTest {
         UUID equipmentPublicId = UUID.randomUUID();
         equipmentProfile.setPublicId(equipmentPublicId);
 
-        when(equipmentProfileRepository.findEquipmentProfileById(equipmentPublicId))
+        when(equipmentProfileRepository.findEquipmentPublicById(equipmentPublicId))
                 .thenReturn(Optional.of(equipmentProfile));
         when(equipmentProfileRepository.save(any(EquipmentProfile.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -219,7 +219,7 @@ class EquipmentProfileServiceTest extends BaseTest {
     void updateEquipmentProfile_shouldThrow_whenEquipmentNotFound() {
         UUID equipmentPublicId = UUID.randomUUID();
 
-        when(equipmentProfileRepository.findEquipmentProfileById(equipmentPublicId))
+        when(equipmentProfileRepository.findEquipmentPublicById(equipmentPublicId))
                 .thenReturn(Optional.empty());
 
         NoSuchElementException exception = assertThrows(
@@ -228,7 +228,7 @@ class EquipmentProfileServiceTest extends BaseTest {
         );
 
         assertEquals("Equipment not found: " + equipmentPublicId, exception.getMessage());
-        verify(equipmentProfileRepository).findEquipmentProfileById(equipmentPublicId);
+        verify(equipmentProfileRepository).findEquipmentPublicById(equipmentPublicId);
         verify(equipmentProfileRepository, never()).save(any());
     }
 
@@ -271,7 +271,7 @@ class EquipmentProfileServiceTest extends BaseTest {
         assertEquals(1, result.getTotalElements());
         assertEquals(1, result.getContent().size());
 
-        EquipmentProfileResponse response = result.getContent().get(0);
+        EquipmentProfileResponse response = result.getContent().getFirst();
         assertEquals(equipmentProfile.getPublicId(), response.publicId());
         assertEquals(equipmentProfile.getName(), response.name());
 
