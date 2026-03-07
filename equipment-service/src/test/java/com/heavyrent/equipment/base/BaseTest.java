@@ -10,34 +10,31 @@ import java.util.UUID;
 
 public abstract class BaseTest {
 
-    UUID equipmentId = UUID.randomUUID();
+    public UUID equipmentId = UUID.randomUUID();
 
     public EquipmentProfile getEquipmentProfile() {
         EquipmentProfile equipmentProfile = new EquipmentProfile();
         equipmentProfile.setId(1L);
+        equipmentProfile.setPublicId(UUID.randomUUID());
+        equipmentProfile.setOwnerPublicId(UUID.randomUUID());
         equipmentProfile.setRegistrationNumber("А123БВ777");
-        equipmentProfile.setName("Экскаватор Caterpillar");
+        equipmentProfile.setName("Caterpillar");
         equipmentProfile.setType(EquipmentProfile.EquipmentType.EXCAVATOR);
         equipmentProfile.setBrand("Caterpillar");
         equipmentProfile.setModel("320D");
         equipmentProfile.setPricePerHourCents(150000L);
         equipmentProfile.setYearOfManufacture(2019L);
-        equipmentProfile.setOwnerId(equipmentId);
+        equipmentProfile.setOwnerKeycloakId(equipmentId);
         equipmentProfile.setHasOperator(true);
         equipmentProfile.setHasAccreditation(true);
         equipmentProfile.setDeliveryType(EquipmentProfile.DeliveryType.SELF_PROPELLED);
         equipmentProfile.setEquipmentStatus(EquipmentProfile.EquipmentStatus.FREE);
+        equipmentProfile.setAvailableFrom(LocalDateTime.now().plusDays(1));
         equipmentProfile.setLatitude(0d);
         equipmentProfile.setLongitude(0d);
         equipmentProfile.setCreatedAt(LocalDateTime.now());
         equipmentProfile.setUpdatedAt(LocalDateTime.now());
         return equipmentProfile;
-    }
-
-    public List<EquipmentProfile> getEquipmentProfileList() {
-        List<EquipmentProfile> list = new ArrayList<>();
-        list.add(getEquipmentProfile());
-        return list;
     }
 
     public EquipmentProfileRequest getEquipmentProfileRequest() {
