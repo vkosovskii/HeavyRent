@@ -1,18 +1,24 @@
+server:
+  port: 8082
+
 grpc:
   server:
     port: 9092
     reflection:
       enabled: true
+  client:
+    user-service:
+      address: static://localhost:9091
+      negotiation-type: plaintext
 
 spring:
   application:
     name: equipment-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/heavyrent_equipment
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5434/heavyrent_equipment
+    username: equipment_service
+    password: equipment_secret
 
   jpa:
     open-in-view: false
@@ -28,4 +34,4 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8080/oauth2/jwks
+          jwk-set-uri: http://localhost:8080/realms/heavyrent/protocol/openid-connect/certs
