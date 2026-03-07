@@ -1,6 +1,7 @@
 package com.heavyrent.equipment.grpc;
 
 import com.google.protobuf.Timestamp;
+import com.heavyrent.equipment.dto.EquipmentFilterRequest;
 import com.heavyrent.equipment.dto.EquipmentProfileRequest;
 import com.heavyrent.equipment.dto.EquipmentProfileResponse;
 import com.heavyrent.equipment.model.EquipmentProfile;
@@ -12,6 +13,7 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -22,9 +24,11 @@ import java.util.UUID;
 public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.EquipmentGrpcServiceImplBase {
 
     EquipmentProfileService service;
+    UserServiceClient userServiceClient;
 
-    public EquipmentGrpcServiceImpl(EquipmentProfileService service) {
+    public EquipmentGrpcServiceImpl(EquipmentProfileService service, UserServiceClient userServiceClient) {
         this.service = service;
+        this.userServiceClient = userServiceClient;
     }
 
     @Override
@@ -53,7 +57,9 @@ public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.Equipment
                 return;
             }
             EquipmentProfileRequest createRequest = toRequest(request);
-            EquipmentProfileResponse response = service.createEquipmentProfile(createRequest, UUID.fromString(context.keycloakId()));
+            UUID ownerKeycloakId = UUID.fromString(context.keycloakId());
+            UUID ownerPublicUuid = userServiceClient.getPublicIdBy(ownerKeycloakId);
+            EquipmentProfileResponse response = service.createEquipmentProfile(createRequest, ownerKeycloakId, ownerPublicUuid);
             responseObserver.onNext(toGrpcResponse(response));
             responseObserver.onCompleted();
         } catch (DataIntegrityViolationException e) {
@@ -69,7 +75,32 @@ public class EquipmentGrpcServiceImpl extends EquipmentGrpcServiceGrpc.Equipment
 
     @Override
     public void getListEquipment(ListEquipmentRequest request, StreamObserver<EquipmentListResponse> responseObserver) {
-        super.getListEquipment(request, responseObserver);
+        try {
+
+            Integer maxPricePerHourCents = request.hasMaxPricePerHourCents() ? request.getMaxPricePerHourCents().getValue() : null;
+            UUID ownerPublicId = request.getOwnerId().isEmpty() ? null : UUID.fromString(request.getOwnerId());
+
+            EquipmentFilterRequest filterRequest = EquipmentFilterRequest.builder()
+                    .ownerPublicId(ownerPublicId)
+                    .name(request.getName())
+                    .model(request.getModel())
+                    .maxPricePerHourCents(maxPricePerHourCents)
+                    .type(EquipmentProfile.EquipmentType.valueOf(request.getType().name()))
+                    .equipmentStatus(EquipmentProfile.EquipmentStatus.valueOf(request.getEquipmentStatus().name()))
+                    .build();
+            EquipmentListResponse.Builder response = EquipmentListResponse.newBuilder();
+            Page<EquipmentProfileResponse> equipmentPage = service.findAll(filterRequest, request.getPage(), request.getPageSize());
+            equipmentPage.forEach(equipment ->
+                response.addEquipment(toGrpcResponse(equipment))
+            );
+            response.setTotalCount((int) equipmentPage.getTotalElements());
+            responseObserver.onNext(response.build());
+            responseObserver.onCompleted();
+        } catch (NoSuchElementException e) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Equipment not found with filters")
+                    .asRuntimeException());
+        }
     }
 
     private EquipmentProfileRequest toRequest(EquipmentCreateRequest request) {
