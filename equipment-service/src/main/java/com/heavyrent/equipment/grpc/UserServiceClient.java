@@ -1,6 +1,7 @@
 package com.heavyrent.equipment.grpc;
 
 
+import com.heavyrent.grpc.common.UserContextClientInterceptor;
 import com.heavyrent.grpc.user.GetUserByKeycloakIdRequest;
 import com.heavyrent.grpc.user.UserGrpcResponse;
 import com.heavyrent.grpc.user.UserGrpcServiceGrpc;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Component
 public class UserServiceClient {
 
-    @GrpcClient("user-service")
+    @GrpcClient(value = "user-service", interceptors = {UserContextClientInterceptor.class})
     UserGrpcServiceGrpc.UserGrpcServiceBlockingStub stub;
 
     public UUID getPublicIdBy(UUID keycloakId) {
