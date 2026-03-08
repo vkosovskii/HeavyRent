@@ -57,7 +57,7 @@ class GrpcExceptionAdviceTest {
         StatusRuntimeException result = advice.handleInternal(exception);
 
         assertEquals(Status.INTERNAL.getCode(), result.getStatus().getCode());
-        assertEquals("Internal server error: Something went wrong", result.getStatus().getDescription());
+        assertEquals("Internal server error", result.getStatus().getDescription());
     }
 
     @Test
