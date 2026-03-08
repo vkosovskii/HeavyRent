@@ -11,11 +11,11 @@ public class UserContextInterceptor implements ServerInterceptor {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata metadata, ServerCallHandler<ReqT, RespT> serverCallHandler) {
         String id = metadata.get(ID_KEY);
         String role = metadata.get(ROLE_KEY);
-        if (id == null || id.isBlank()) {
-            serverCall.close(Status.UNAUTHENTICATED.withDescription("Missing x-user-id"), new Metadata());
-            return new ServerCall.Listener<>() {};
-        }
-        Context context = Context.current().withValue(UserContextHolder.KEY, new UserContext(id, role));
+
+        UserContext userContext = (id == null || id.isBlank())
+                ? new UserContext("anonymous", null)
+                : new UserContext(id, role);
+        Context context = Context.current().withValue(UserContextHolder.KEY, userContext);
         return Contexts.interceptCall(context, serverCall, metadata, serverCallHandler);
     }
 }
