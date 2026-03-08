@@ -4,12 +4,15 @@ import com.google.protobuf.Timestamp;
 import com.heavyrent.equipment.dto.EquipmentProfileRequest;
 import com.heavyrent.equipment.dto.EquipmentProfileResponse;
 import com.heavyrent.equipment.model.EquipmentProfile;
-import com.heavyrent.grpc.equipment.*;
+import com.heavyrent.grpc.equipment.EquipmentCreateRequest;
+import com.heavyrent.grpc.equipment.EquipmentStatus;
+import com.heavyrent.grpc.equipment.EquipmentType;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-public class EquipmentMapper {
+public class EquipmentEntityMapper {
 
     public static EquipmentProfile toEntity(EquipmentProfileRequest equipmentProfileResponse) {
         return fillIn(equipmentProfileResponse, new EquipmentProfile());
@@ -30,8 +33,8 @@ public class EquipmentMapper {
         profile.setHasOperator(equipmentProfileResponse.hasOperator());
         profile.setHasAccreditation(equipmentProfileResponse.hasAccreditation());
         profile.setDeliveryType(equipmentProfileResponse.deliveryType());
-        profile.setEquipmentStatus(equipmentProfileResponse.equipmentStatus());
         profile.setAvailableFrom(equipmentProfileResponse.availableFrom());
+        profile.setEquipmentStatus(equipmentProfileResponse.equipmentStatus());
         profile.setLatitude(equipmentProfileResponse.latitude());
         profile.setLongitude(equipmentProfileResponse.longitude());
         return profile;
@@ -68,32 +71,13 @@ public class EquipmentMapper {
                 .model(request.getModel())
                 .pricePerHourCents(request.getPricePerHourCents())
                 .yearOfManufacture(request.getYearOfManufacture())
+                .availableFrom(toLocalDateTime(request.getAvailableFrom()))
                 .hasOperator(request.getHasOperator())
                 .hasAccreditation(request.getHasAccreditation())
                 .deliveryType(EquipmentProfile.DeliveryType.valueOf(request.getDeliveryType().name()))
                 .equipmentStatus(EquipmentProfile.EquipmentStatus.valueOf(request.getEquipmentStatus().name()))
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
-                .build();
-    }
-
-    public static EquipmentGrpcResponse toGrpcResponse(EquipmentProfileResponse response) {
-        return EquipmentGrpcResponse.newBuilder()
-                .setName(response.name())
-                .setEquipmentId(response.publicId().toString())
-                .setType(EquipmentType.valueOf(response.type().name()))
-                .setRegistrationNumber(response.registrationNumber())
-                .setBrand(response.brand())
-                .setModel(response.model())
-                .setHasOperator(response.hasOperator())
-                .setPricePerHourCents(response.pricePerHourCents())
-                .setHasAccreditation(response.hasAccreditation())
-                .setDeliveryType(DeliveryType.valueOf(response.deliveryType().name()))
-                .setEquipmentStatus(EquipmentStatus.valueOf(response.equipmentStatus().name()))
-                .setLatitude(response.latitude())
-                .setLongitude(response.longitude())
-                .setCreatedAt(toTimestamp(response.createdAt()))
-                .setUpdatedAt(toTimestamp(response.updatedAt()))
                 .build();
     }
 
@@ -105,14 +89,9 @@ public class EquipmentMapper {
         return EquipmentProfile.EquipmentStatus.valueOf(protoStatus.name());
     }
 
-    private static Timestamp toTimestamp(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            return null;
-        }
-
-        return Timestamp.newBuilder()
-                .setSeconds(dateTime.toEpochSecond(ZoneOffset.UTC))
-                .setNanos(dateTime.getNano())
-                .build();
+    private static LocalDateTime toLocalDateTime(Timestamp timestamp) {
+        if (timestamp == null) return null;
+        Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+        return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
     }
 }
