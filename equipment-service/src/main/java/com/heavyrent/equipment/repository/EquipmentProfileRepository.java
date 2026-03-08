@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface EquipmentProfileRepository extends JpaRepository<EquipmentProfile, Long>, JpaSpecificationExecutor<EquipmentProfile> {
 
     List<EquipmentProfile> findByOwnerKeycloakId(UUID ownerKeycloakId);
-    Optional<EquipmentProfile> findEquipmentPublicById(UUID publicId);
+    Optional<EquipmentProfile> findEquipmentByPublicId(UUID publicId);
     void deleteByPublicId(UUID publicId);
 }
