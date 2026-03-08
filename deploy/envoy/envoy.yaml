@@ -41,6 +41,25 @@ static_resources:
                       address: host.docker.internal
                       port_value: 9091
 
+    # equipment-service — gRPC, на хост машине
+    - name: equipment_service_cluster
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: { }
+      load_assignment:
+        cluster_name: equipment_service_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: host.docker.internal
+                      port_value: 9092
+
   listeners:
     - name: main_listener
       address:
@@ -81,10 +100,18 @@ static_resources:
                             - header_name: x-user-id
                               claim_name: sub
                             - header_name: x-user-role
-                              claim_name: realm_access/roles/0
+                              claim_name: role
                       rules:
                         - match:
-                            prefix: "/api/"
+                            prefix: "/api/equipment"
+                            headers:
+                              - name: ":method"
+                                string_match:
+                                  exact: "POST"
+                          requires:
+                            provider_name: keycloak_jwt
+                        - match:
+                            prefix: "/api/users"
                           requires:
                             provider_name: keycloak_jwt
 
@@ -95,6 +122,7 @@ static_resources:
                       proto_descriptor: "/etc/envoy/proto.pb"
                       services:
                         - "user.UserGrpcService"
+                        - "equipment.EquipmentGrpcService"
                       print_options:
                         add_whitespace: true
                         always_print_primitive_fields: true
@@ -115,4 +143,9 @@ static_resources:
                             prefix: "/user.UserGrpcService/"
                           route:
                             cluster: user_service_cluster
+                            timeout: 10s
+                        - match:
+                            prefix: "/equipment.EquipmentGrpcService/"
+                          route:
+                            cluster: equipment_service_cluster
                             timeout: 10s
