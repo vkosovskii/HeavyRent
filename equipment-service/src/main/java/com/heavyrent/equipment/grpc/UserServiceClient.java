@@ -27,8 +27,8 @@ public class UserServiceClient {
         try {
             response = stub.getUserByKeycloakId(request);
         } catch (StatusRuntimeException e) {
-            log.error("RPC failed: {}", e.getStatus());
-            throw new RuntimeException(e);
+            log.error("RPC failed: {}", e.getStatus(), e);
+            throw new IllegalStateException("Failed to fetch user public id", e);
         }
         return UUID.fromString(response.getPublicId());
     }
