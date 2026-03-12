@@ -1,5 +1,6 @@
 package com.heavyrent.user.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heavyrent.user.dto.KeycloakRequest;
@@ -25,8 +26,7 @@ public class UserRegistrationConsumer {
     }
 
     @KafkaListener(topics = "user.registered", groupId = "user-service")
-    public void handleUserRegistered(String message) {
-        try {
+    public void handleUserRegistered(String message) throws JsonProcessingException {
             log.info("Received event from Kafka: {}", message);
 
             JsonNode root = objectMapper.readTree(message);
@@ -62,8 +62,5 @@ public class UserRegistrationConsumer {
 
             userProfileService.createUserProfile(keycloakRequest);
 
-        } catch (Exception e) {
-            log.error("Failed to process user registration event: {}", message, e);
-        }
     }
 }
